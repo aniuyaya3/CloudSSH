@@ -167,15 +167,17 @@ With GitHub OAuth enabled, users can log in with their GitHub account and save/m
      - `BASE_URL` = `https://your-domain.com` (your deployed domain)
    - **Method 2 (CLI)**: Uncomment `GITHUB_CLIENT_ID` and `BASE_URL` in `wrangler.toml` and enter your values.
 
-3. **Set Secrets** (sensitive info, never committed to the repository):
-   ```bash
-   npx wrangler secret set GITHUB_CLIENT_SECRET
-   # Paste your Client Secret
-   ```
+3. **Set Secrets (Sensitive Information)**:
+   - After deploying the project, go to Cloudflare Dashboard → your Worker project (`cloudssh`) → **Settings** → **Variables and Secrets**.
+   - Click **Add** under Environment Variables:
+     - **Type**: Select **Secret** ⚠️ (Important: Do not select Text)
+     - **Variable name**: `GITHUB_CLIENT_SECRET`
+     - **Value**: Paste your Client Secret
+   - Click **Save and deploy**.
 
-4. **Redeploy**: Run the deployment command to apply the configuration.
+4. **Redeploy**: If you just added the variables and are enabling the feature for the first time, you must delete the old deployment and redeploy to initialize the database.
 
-> **Note**: Server credentials (passwords/private keys) are encrypted with AES-256-GCM before storage. The encryption key is automatically generated and safely stored in the database. During connection, credentials never pass through the frontend — they are securely transmitted via a one-time-token mechanism.
+> **Note**: Server credentials (passwords/private keys) are encrypted with AES-256-GCM before storage. The local encryption key is automatically generated and safely stored in the database (you can also manually override it by setting `SESSION_SECRET` in environment variables). During connection, credentials never pass through the frontend — they are securely transmitted via a one-time-token mechanism.
 
 > **Important**: Enabling this feature for the first time requires a clean deployment (delete the old Worker first, then redeploy) to initialize the new Durable Object. Use `npx wrangler delete cloudssh` to remove the old Worker, then run `npm run deploy` to redeploy.
 

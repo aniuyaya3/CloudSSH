@@ -167,15 +167,17 @@ flowchart TB
      - `BASE_URL` = `https://your-domain.com`（你的部署域名）
    - **方式二部署**：取消 `wrangler.toml` 中 `GITHUB_CLIENT_ID` 和 `BASE_URL` 的注释，填入对应值。
 
-3. **设置 Secrets**（敏感信息，不写入代码仓库）：
-   ```bash
-   npx wrangler secret set GITHUB_CLIENT_SECRET
-   # 粘贴你的 Client Secret
-   ```
+3. **设置 Secrets（敏感密钥）**：
+   - 部署项目后，进入 Cloudflare Dashboard → 你的 Worker 项目 (`cloudssh`) → **Settings (设置)** → **Variables and Secrets (变量和机密)**。
+   - 点击 **Add (添加)** 环境变量：
+     - **Type (类型)**：选择 **Secret (机密)** ⚠️（非常重要，不要选 Text）
+     - **变量名**：`GITHUB_CLIENT_SECRET`
+     - **值**：粘贴你获取到的 Client Secret
+   - 随后点击 **Save and deploy (保存并部署)**。
 
-4. **重新部署**：运行部署命令使配置生效。
+4. **重新部署**：如果你是刚刚修改了环境变量，且是首次启用该功能，请务必删除旧版并全新部署以初始化数据库。
 
-> **说明**：服务器凭据（密码/私钥）在数据库中使用 AES-256-GCM 加密存储，本地加密密钥将自动生成并安全地存储在数据库中。连接时凭据不经过前端，通过 one-time-token 机制安全传递。
+> **说明**：服务器凭据（密码/私钥）在数据库中使用 AES-256-GCM 加密存储，本地加密密钥将自动生成并安全地存储在数据库中（也可在环境变量中手动设置 `SESSION_SECRET` 来指定）。连接时凭据不经过前端，通过 one-time-token 机制安全传递。
 
 > **注意**：首次启用此功能需要从零部署（删除旧 Worker 后重新部署），因为需要初始化新的 Durable Object。可通过 `npx wrangler delete cloudssh` 删除旧 Worker，然后运行 `npm run deploy` 重新部署。
 
