@@ -71,7 +71,7 @@ export class SSHSession {
   private curve25519KeyPair: Curve25519KeyPair | null = null;
   private kexRawPublicKey: Uint8Array | null = null;
 
-  private state: 'connecting' | 'version' | 'kex' | 'auth' | 'shell' | 'ready'
+  private state: 'connecting' | 'version' | 'kex' | 'auth' | 'shell' | 'shell-requested' | 'ready'
     = 'connecting';
   private hostKeyFingerprint: string = '';
 
@@ -333,6 +333,7 @@ export class SSHSession {
         break;
 
       case 'shell':
+      case 'shell-requested':
       case 'ready':
         await this.handleSessionPacket(msgType, packet.payload);
         break;
@@ -851,8 +852,12 @@ export class SSHSession {
 
       case SSH_MSG_CHANNEL_SUCCESS:
         if (this.state === 'shell') {
+          // PTY 请求确认，发送 shell 请求
           const shellReq = this.channel.buildShellRequest();
           await this.sendEncrypted(shellReq);
+          this.state = 'shell-requested';
+        } else if (this.state === 'shell-requested') {
+          // Shell 请求确认，进入 ready 状态
           this.state = 'ready';
           this.sendStatus('Shell 已就绪');
         }
